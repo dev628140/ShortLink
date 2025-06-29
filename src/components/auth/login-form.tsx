@@ -1,8 +1,9 @@
 "use client";
 
+import React, { Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -26,26 +27,10 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-export function LoginForm() {
+function LoginFormInner() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // check if user just registered
-  useEffect(() => {
-    const registered = searchParams.get("registered");
-    if (registered === "true") {
-      toast.success("Account created successfully", {
-        description: "You have been registered successfully. Please sign in.",
-      });
-
-      // remove the query param
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.delete("registered");
-      router.replace(newUrl.toString(), undefined);
-    }
-  }, [searchParams, router]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -54,6 +39,7 @@ export function LoginForm() {
       password: "",
     },
   });
+
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
@@ -90,7 +76,6 @@ export function LoginForm() {
 
   return (
     <div className="space-y-6">
-
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
@@ -142,16 +127,14 @@ export function LoginForm() {
           </Button>
         </form>
       </Form>
-
-      <p className="text-center text-sm text-muted-foreground">
-        New user?{" "}
-        <a
-          href="/register"
-          className="font-medium text-primary underline underline-offset-4 hover:text-primary/80"
-        >
-          Sign up here
-        </a>
-      </p>
     </div>
+  );
+}
+
+export function LoginForm() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginFormInner />
+    </Suspense>
   );
 }
