@@ -12,13 +12,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Pagination,
-  PaginationContent,
   PaginationEllipsis,
   PaginationItem,
   PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from "@/components/ui/pagination";
 import {
   Table,
@@ -29,20 +25,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { UrlWithUser } from "@/server/actions/admin/urls/get-all-urls";
-import { manageFlaggedUrl } from "@/server/actions/admin/urls/manage-flagged-url";
 import { formatDistanceToNow } from "date-fns";
 import {
-  AlertTriangle,
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
-  Ban,
-  CheckCircle,
   Copy,
   ExternalLink,
   Loader2,
   MoreHorizontal,
-  User,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -55,7 +46,6 @@ interface UrlsTableProps {
   currentSearch: string;
   currentSortBy: string;
   currentSortOrder: string;
-  highlightStyle?: "security" | "inappropriate" | "other" | "none";
 }
 
 export function UrlsTable({
@@ -65,11 +55,9 @@ export function UrlsTable({
   currentSearch,
   currentSortBy,
   currentSortOrder,
-  highlightStyle,
 }: UrlsTableProps) {
   const router = useRouter();
   const [copyingId, setCopyingId] = useState<number | null>(null);
-  const [actionLoading, setActionLoading] = useState<number | null>(null);
 
   // Get the current path from window location or default to /admin/urls
   const basePath =
@@ -211,69 +199,9 @@ export function UrlsTable({
     );
   };
 
-  const getHighlightStyles = (url: UrlWithUser) => {
-    if (!url.flagged) return "";
-
-    switch (highlightStyle) {
-      case "security":
-        return "bg-red-50/50 dark:bg-red-900/10 hover:bg-red-50/80 dark:hover:bg-red-900/20";
-      case "inappropriate":
-        return "bg-orange-50/50 dark:bg-orange-900/10 hover:bg-orange-50/80 dark:hover:bg-orange-900/20";
-      case "other":
-        return "bg-yellow-50/50 dark:bg-yellow-900/10 hover:bg-yellow-50/80 dark:hover:bg-yellow-900/20";
-      default:
-        return url.flagged ? "bg-yellow-50/50 dark:bg-yellow-900/10" : "";
-    }
-  };
-
-  // Get flag icon color based on the type
-  const getFlagIconColor = () => {
-    switch (highlightStyle) {
-      case "security":
-        return "text-red-500 dark:text-red-400";
-      case "inappropriate":
-        return "text-orange-500 dark:text-orange-400";
-      case "other":
-        return "text-yellow-500 dark:text-yellow-400";
-      default:
-        return "text-yellow-600 dark:text-yellow-400";
-    }
-  };
-
   const truncateUrl = (url: string, maxLenght = 50) => {
     if (url.length <= maxLenght) return url;
     return url.substring(0, maxLenght) + "...";
-  };
-
-  const handleManageFlaggedUrl = async (
-    urlId: number,
-    action: "approve" | "delete"
-  ) => {
-    try {
-      setActionLoading(urlId);
-
-      const response = await manageFlaggedUrl(urlId, action);
-      if (response.success) {
-        toast.success(
-          action === "approve"
-            ? "URL approved successfully."
-            : "URL deleted successfully."
-        );
-
-        router.refresh();
-      } else {
-        toast.error("Failed to manage flagged URL.", {
-          description: response.error || "Unknown error",
-        });
-      }
-    } catch (error) {
-      console.error("Error managing flagged URL", error);
-      toast.error("Failed to manage flagged URL.", {
-        description: "Internal server error",
-      });
-    } finally {
-      setActionLoading(null);
-    }
   };
 
   const copyToClipboard = async (id: number, shortCode: string) => {
@@ -357,32 +285,17 @@ export function UrlsTable({
               </TableRow>
             ) : (
               urls.map((url) => (
-                <TableRow key={url.id} className={getHighlightStyles(url)}>
+                <TableRow key={url.id}>
                   <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      {url.flagged && (
-                        <div
-                          className={getFlagIconColor()}
-                          title={url.flagReason || "Flagged By AI"}
-                        >
-                          <AlertTriangle className="size-4" />
-                        </div>
-                      )}
-                      <a
-                        href={url.originalUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline flex items-center gap-1 max-w-[250px] truncate"
-                      >
-                        {truncateUrl(url.originalUrl)}
-                        <ExternalLink className="size-3" />
-                      </a>
-                    </div>
-                    {url.flagged && url.flagReason && (
-                      <div className="mt-1 text-xs text-yellow-600 dark:text-yellow-400 max-w-[250px] truncate">
-                        Reason: {url.flagReason}
-                      </div>
-                    )}
+                    <a
+                      href={url.originalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline flex items-center gap-1 max-w-[250px] truncate"
+                    >
+                      {truncateUrl(url.originalUrl)}
+                      <ExternalLink className="size-3" />
+                    </a>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -458,35 +371,6 @@ export function UrlsTable({
                             Visit Original URL
                           </a>
                         </DropdownMenuItem>
-                        {url.flagged && (
-                          <>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-green-600 dark:text-green-400"
-                              onClick={() =>
-                                handleManageFlaggedUrl(url.id, "approve")
-                              }
-                            >
-                              {actionLoading === url.id && (
-                                <Loader2 className="size-4 mr-1" />
-                              )}
-                              <CheckCircle className="size-4 mr-1 text-green-700" />
-                              Approve URL
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-red-600 dark:text-red-400"
-                              onClick={() =>
-                                handleManageFlaggedUrl(url.id, "delete")
-                              }
-                            >
-                              {actionLoading === url.id && (
-                                <Loader2 className="size-4 mr-1" />
-                              )}
-                              <Ban className="size-4 mr-1 text-red-700" />
-                              Delete URL
-                            </DropdownMenuItem>
-                          </>
-                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -495,44 +379,6 @@ export function UrlsTable({
             )}
           </TableBody>
         </Table>
-      </div>
-
-      {totalPage > 1 && (
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                href={`${basePath}?page=${Math.max(1, currentPage - 1)}${
-                  currentSearch ? `&search=${currentSearch}` : ""
-                }${
-                  currentSortBy
-                    ? `&sortBy=${currentSortBy}&sortOrder=${currentSortOrder}`
-                    : ""
-                }${preserveParams()}`}
-              />
-            </PaginationItem>
-
-            {getPaginationItems()}
-
-            <PaginationItem>
-              <PaginationNext
-                href={`${basePath}?page=${Math.min(
-                  totalPage,
-                  currentPage + 1
-                )}${currentSearch ? `&search=${currentSearch}` : ""}${
-                  currentSortBy
-                    ? `&sortBy=${currentSortBy}&sortOrder=${currentSortOrder}`
-                    : ""
-                }${preserveParams()}`}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      )}
-
-      <div className="text-xs text-muted-foreground">
-        Showing {urls.length} of {total} URLs.
-        {currentSearch && ` Search results for "${currentSearch}".`}
       </div>
     </div>
   );

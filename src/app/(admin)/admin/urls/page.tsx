@@ -49,25 +49,7 @@ export default async function AdminUrlsPage({
     | "clicks"
     | "userName";
   const sortOrder = (params.sortOrder || "desc") as "asc" | "desc";
-  const filter = (params.filter || "all") as
-    | "all"
-    | "flagged"
-    | "security"
-    | "inappropriate"
-    | "other";
-
-  const getHighlightStyle = () => {
-    switch (filter) {
-      case "security":
-        return "security";
-      case "inappropriate":
-        return "inappropriate";
-      case "other":
-        return "other";
-      default:
-        return "none";
-    }
-  };
+  const filter = (params.filter || "all") as "all";
 
   const response = await getAllUrls({
     page,
@@ -110,7 +92,6 @@ export default async function AdminUrlsPage({
                 currentSearch={search}
                 currentSortBy={sortBy}
                 currentSortOrder={sortOrder}
-                highlightStyle={getHighlightStyle()}
               />
             </div>
           </CardContent>

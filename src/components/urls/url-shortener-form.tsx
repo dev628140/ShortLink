@@ -19,7 +19,6 @@ import { Card, CardContent } from "../ui/card";
 import { AlertTriangle, Copy, QrCode } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { QRCodeModal } from "../modals/qr-code-modal";
-import { boolean } from "drizzle-orm/gel-core";
 import { toast } from "sonner";
 import { SignupSuggestionDialog } from "../dialogs/signup-suggestion-dialog";
 
@@ -74,19 +73,19 @@ export function UrlShortenerForm() {
           setShortCode(shortCodeMatch[1]);
         }
 
-        if (response.data.flagged) {
-          setFlaggedInfo({
-            flagged: response.data.flagged,
-            reason: response.data.flagReason || null,
-            message: response.data.message,
-          });
+        // if (response.data.flagged) {
+        //   setFlaggedInfo({
+        //     flagged: response.data.flagged,
+        //     reason: response.data.flagReason || null,
+        //     message: response.data.message,
+        //   });
 
-          toast.warning(response.data.message || "This URL is flagged", {
-            description: response.data.flagReason,
-          });
-        } else {
+        //   toast.warning(response.data.message || "This URL is flagged", {
+        //     description: response.data.flagReason,
+        //   });
+        // } else {
           toast.success("URL shortened successfully");
-        }
+        // }
       }
 
       if (session?.user && pathname.includes("/dashboard")) {

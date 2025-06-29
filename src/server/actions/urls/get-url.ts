@@ -35,8 +35,6 @@ export async function getUrlByShortCode(shortCode: string): Promise<
       success: true,
       data: {
         originalUrl: url.originalUrl,
-        flagged: url.flagged || false,
-        flagReason: url.flagReason || null,
       },
     };
   } catch (error) {

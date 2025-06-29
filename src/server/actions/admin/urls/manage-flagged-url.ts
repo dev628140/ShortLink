@@ -34,8 +34,6 @@ export async function manageFlaggedUrl(
       await db
         .update(urls)
         .set({
-          flagged: false,
-          flagReason: null,
           updatedAt: new Date(),
         })
         .where(eq(urls.id, urlId));
@@ -44,6 +42,7 @@ export async function manageFlaggedUrl(
     } else {
       return { success: false, error: "Invalid action" };
     }
+
 
     revalidatePath("/admin/urls");
     revalidatePath("/admin/urls/flagged");
