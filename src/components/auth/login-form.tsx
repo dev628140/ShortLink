@@ -4,7 +4,7 @@ import React, { Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "../ui/button";
@@ -39,7 +39,6 @@ function LoginFormInner() {
       password: "",
     },
   });
-
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
@@ -127,6 +126,16 @@ function LoginFormInner() {
           </Button>
         </form>
       </Form>
+
+      <p className="text-center text-sm text-muted-foreground">
+        New user?{" "}
+        <a
+          href="/register"
+          className="font-medium text-primary underline underline-offset-4 hover:text-primary/80"
+        >
+          Sign up here
+        </a>
+      </p>
     </div>
   );
 }

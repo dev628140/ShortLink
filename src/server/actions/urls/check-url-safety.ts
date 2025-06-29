@@ -7,8 +7,6 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY!);
 
 export type UrlSafetyCheck = {
   isSafe: boolean;
-  flagged: boolean;
-  reason: string | null;
   category: "safe" | "suspicious" | "malicious" | "inappropriate" | "unknown";
   confidence: number;
 };
@@ -33,8 +31,6 @@ export async function checkUrlSafety(
         success: true,
         data: {
           isSafe: true,
-          flagged: false,
-          reason: null,
           category: "unknown",
           confidence: 0,
         },
@@ -56,8 +52,6 @@ export async function checkUrlSafety(
     Respond in JSON format with the following structure:
     {
       "isSafe": boolean,
-      "flagged": boolean,
-      "reason": string or null,
       "category": "safe" | "suspicious" | "malicious" | "inappropriate" | "unknown",
       "confidence": number between 0 and 1
     }
@@ -80,8 +74,7 @@ export async function checkUrlSafety(
       success: true,
       data: jsonResponse,
     };
-  } catch (error) {
-    console.error(error);
+  } catch {
     return {
       success: false,
       error: "Failed to check URL safety"
